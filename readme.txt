@@ -13,3 +13,7 @@ identical to the output of professional software like Paint.NET.
 The implementation is described in details on my blog:
 
 http://keyvan.io/very-high-quality-image-resizing-in-net
+
+NuGet Package:
+
+http://nuget.org/packages/ImageResizer4DotNet
