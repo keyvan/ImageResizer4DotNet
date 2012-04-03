@@ -14,6 +14,11 @@ The implementation is described in details on my blog:
 
 http://keyvan.io/very-high-quality-image-resizing-in-net
 
+Important Note:
+
+The use of current version may cause memory leakes in services
+and ASP.NET applications.
+
 NuGet Package:
 
 http://nuget.org/packages/ImageResizer4DotNet
