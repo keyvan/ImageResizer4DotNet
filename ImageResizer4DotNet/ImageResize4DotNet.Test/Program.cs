@@ -10,7 +10,7 @@ namespace ImageResize4DotNet.Test
         {
             Console.Title = "Image Resizer for .NET";
 
-            string filePath = @"c:\users\keyvan nayyeri\documents\visual studio 2010\Projects\ImageResizer4DotNet\ImageResize4DotNet.Test\Original.jpg";
+            string filePath = @"C:\Users\Keyvan Nayyeri\Documents\Git\ImageResizer4DotNet\ImageResizer4DotNet\ImageResize4DotNet.Test\Original.jpg";
 
             Console.WriteLine("Enter the original image path:");
             string temp = Console.ReadLine();
@@ -18,14 +18,11 @@ namespace ImageResize4DotNet.Test
             if (!string.IsNullOrEmpty(temp))
                 filePath = temp;
 
-            MemoryStream original = new MemoryStream
-                (System.IO.File.ReadAllBytes(filePath));
-
-            MemoryStream resizedStream = Resizer.LowResize(original, 400, 225);
-
-            StreamWriter writer = new StreamWriter("resized.jpg");
-            resizedStream.WriteTo(writer.BaseStream);
-            writer.Close();
+            // Low quality
+            MemoryStream original = new MemoryStream(System.IO.File.ReadAllBytes(filePath));
+            MemoryStream resizedStreamLow = Resizer.Low(original, 400, 225);
+            File.WriteAllBytes("resizedlow.png", resizedStreamLow.ToArray());
+            resizedStreamLow.Position = 0;
 
             Console.WriteLine("Done!");
 

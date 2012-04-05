@@ -1,83 +1,121 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.IO;
+﻿using System.IO;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace ImageResizer4DotNet
 {
     public class Resizer
     {
-        public static MemoryStream LowResize(MemoryStream original, int width, int height)
+        public static MemoryStream Resize(MemoryStream original, int width, int height)
         {
             MemoryStream result = new MemoryStream();
 
-            Image image = Image.FromStream(original);
+            BitmapDecoder photoDecoder = BitmapDecoder.Create(original, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
+            BitmapFrame photo = photoDecoder.Frames[0];
 
-            // Don't do this to yourself!
-            Image thumbnail = image.GetThumbnailImage(width, height, null, IntPtr.Zero);
-            thumbnail.Save(result, image.RawFormat);
+            TransformedBitmap target = new TransformedBitmap(
+                photo,
+                new ScaleTransform(
+                    width / photo.Width * 96 / photo.DpiX,
+                    height / photo.Height * 96 / photo.DpiY,
+                    0, 0));
+            BitmapFrame thumbnail = BitmapFrame.Create(target);
+            BitmapFrame newphoto = Resize(thumbnail, width, height, BitmapScalingMode.Unspecified);
 
-            thumbnail.Dispose();
-            image.Dispose();
-
-            result.Position = 0;
+            PngBitmapEncoder targetEncoder = new PngBitmapEncoder();
+            targetEncoder.Frames.Add(newphoto);
+            targetEncoder.Save(result);
 
             return result;
         }
 
-        public static MemoryStream MediumResize(MemoryStream original, int width, int height)
+        public static MemoryStream Low(MemoryStream original, int width, int height)
         {
             MemoryStream result = new MemoryStream();
 
-            Image image = Image.FromStream(original);
-            Bitmap bitmap = new Bitmap(width, height);
+            BitmapDecoder photoDecoder = BitmapDecoder.Create(original, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
+            BitmapFrame photo = photoDecoder.Frames[0];
 
-            Graphics graphics = Graphics.FromImage(bitmap);
-            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            graphics.SmoothingMode = SmoothingMode.HighQuality;
-            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            graphics.CompositingQuality = CompositingQuality.HighQuality;
+            TransformedBitmap target = new TransformedBitmap(
+                photo,
+                new ScaleTransform(
+                    width / photo.Width * 96 / photo.DpiX,
+                    height / photo.Height * 96 / photo.DpiY,
+                    0, 0));
+            BitmapFrame thumbnail = BitmapFrame.Create(target);
+            BitmapFrame newphoto = Resize(thumbnail, width, height, BitmapScalingMode.LowQuality);
 
-            Rectangle imageRectangle = new Rectangle(0, 0, width, height);
-            graphics.DrawImage(image, imageRectangle);
-
-            bitmap.Save(result, image.RawFormat);
-
-            graphics.Dispose();
-            bitmap.Dispose();
-            image.Dispose();
-
-            result.Position = 0;
+            PngBitmapEncoder targetEncoder = new PngBitmapEncoder();
+            targetEncoder.Frames.Add(newphoto);
+            targetEncoder.Save(result);
 
             return result;
         }
 
-        public static MemoryStream HighResize(MemoryStream original, int width, int height)
+
+        public static MemoryStream High(MemoryStream original, int width, int height)
         {
             MemoryStream result = new MemoryStream();
 
-            Image image = Image.FromStream(original);
-            Image thumbnail = new Bitmap(width, height);
-            Graphics graphics = Graphics.FromImage(thumbnail);
+            BitmapDecoder photoDecoder = BitmapDecoder.Create(original, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
+            BitmapFrame photo = photoDecoder.Frames[0];
 
-            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            graphics.SmoothingMode = SmoothingMode.HighQuality;
-            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            graphics.CompositingQuality = CompositingQuality.HighQuality;
+            TransformedBitmap target = new TransformedBitmap(
+                photo,
+                new ScaleTransform(
+                    width / photo.Width * 96 / photo.DpiX,
+                    height / photo.Height * 96 / photo.DpiY,
+                    0, 0));
+            BitmapFrame thumbnail = BitmapFrame.Create(target);
+            BitmapFrame newphoto = Resize(thumbnail, width, height, BitmapScalingMode.HighQuality);
 
-            graphics.DrawImage(image, 0, 0, width, height);
 
-            ImageCodecInfo[] info = ImageCodecInfo.GetImageEncoders();
-            EncoderParameters encoderParameters;
-            encoderParameters = new EncoderParameters(1);
-            encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 100L);
-
-            thumbnail.Save(result, info[1], encoderParameters);
-
-            result.Position = 0;
+            PngBitmapEncoder targetEncoder = new PngBitmapEncoder();
+            targetEncoder.Frames.Add(newphoto);
+            targetEncoder.Save(result);
 
             return result;
+        }
+
+
+        public static MemoryStream NearestNeighbor(MemoryStream original, int width, int height)
+        {
+            MemoryStream result = new MemoryStream();
+
+            BitmapDecoder photoDecoder = BitmapDecoder.Create(original, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
+            BitmapFrame photo = photoDecoder.Frames[0];
+
+            TransformedBitmap target = new TransformedBitmap(
+                photo,
+                new ScaleTransform(
+                    width / photo.Width * 96 / photo.DpiX,
+                    height / photo.Height * 96 / photo.DpiY,
+                    0, 0));
+            BitmapFrame thumbnail = BitmapFrame.Create(target);
+            BitmapFrame newphoto = Resize(thumbnail, width, height, BitmapScalingMode.NearestNeighbor);
+
+
+            PngBitmapEncoder targetEncoder = new PngBitmapEncoder();
+            targetEncoder.Frames.Add(newphoto);
+            targetEncoder.Save(result);
+
+            return result;
+        }
+
+        private static BitmapFrame Resize(BitmapFrame photo, int width, int height, BitmapScalingMode scalingMode)
+        {
+            DrawingGroup group = new DrawingGroup();
+            RenderOptions.SetBitmapScalingMode(group, scalingMode);
+            group.Children.Add(new ImageDrawing(photo, new Rect(0, 0, width, height)));
+            DrawingVisual targetVisual = new DrawingVisual();
+            DrawingContext targetContext = targetVisual.RenderOpen();
+            targetContext.DrawDrawing(group);
+            RenderTargetBitmap target = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Default);
+            targetContext.Close();
+            target.Render(targetVisual);
+            BitmapFrame targetFrame = BitmapFrame.Create(target);
+            return targetFrame;
         }
     }
 }
