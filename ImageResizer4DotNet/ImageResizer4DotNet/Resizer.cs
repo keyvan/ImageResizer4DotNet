@@ -1,121 +1,93 @@
 ﻿using System.IO;
-using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace ImageResizer4DotNet
 {
-    public class Resizer
+    public partial class Resizer
     {
-        public static MemoryStream Resize(MemoryStream original, int width, int height)
+        public static MemoryStream ResizePng(MemoryStream original, int width, int height)
         {
-            MemoryStream result = new MemoryStream();
+            BitmapFrame newphoto = GetBitmapFrame(original, width, height, BitmapScalingMode.Unspecified);
 
-            BitmapDecoder photoDecoder = BitmapDecoder.Create(original, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
-            BitmapFrame photo = photoDecoder.Frames[0];
-
-            TransformedBitmap target = new TransformedBitmap(
-                photo,
-                new ScaleTransform(
-                    width / photo.Width * 96 / photo.DpiX,
-                    height / photo.Height * 96 / photo.DpiY,
-                    0, 0));
-            BitmapFrame thumbnail = BitmapFrame.Create(target);
-            BitmapFrame newphoto = Resize(thumbnail, width, height, BitmapScalingMode.Unspecified);
-
-            PngBitmapEncoder targetEncoder = new PngBitmapEncoder();
-            targetEncoder.Frames.Add(newphoto);
-            targetEncoder.Save(result);
-
-            return result;
+            return GetPngStream(newphoto);
         }
 
-        public static MemoryStream Low(MemoryStream original, int width, int height)
+        public static MemoryStream LowPng(MemoryStream original, int width, int height)
         {
-            MemoryStream result = new MemoryStream();
+            BitmapFrame newphoto = GetBitmapFrame(original, width, height, BitmapScalingMode.LowQuality);
 
-            BitmapDecoder photoDecoder = BitmapDecoder.Create(original, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
-            BitmapFrame photo = photoDecoder.Frames[0];
-
-            TransformedBitmap target = new TransformedBitmap(
-                photo,
-                new ScaleTransform(
-                    width / photo.Width * 96 / photo.DpiX,
-                    height / photo.Height * 96 / photo.DpiY,
-                    0, 0));
-            BitmapFrame thumbnail = BitmapFrame.Create(target);
-            BitmapFrame newphoto = Resize(thumbnail, width, height, BitmapScalingMode.LowQuality);
-
-            PngBitmapEncoder targetEncoder = new PngBitmapEncoder();
-            targetEncoder.Frames.Add(newphoto);
-            targetEncoder.Save(result);
-
-            return result;
+            return GetPngStream(newphoto);
         }
 
-
-        public static MemoryStream High(MemoryStream original, int width, int height)
+        public static MemoryStream HighPng(MemoryStream original, int width, int height)
         {
-            MemoryStream result = new MemoryStream();
+            BitmapFrame newphoto = GetBitmapFrame(original, width, height, BitmapScalingMode.HighQuality);
 
-            BitmapDecoder photoDecoder = BitmapDecoder.Create(original, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
-            BitmapFrame photo = photoDecoder.Frames[0];
-
-            TransformedBitmap target = new TransformedBitmap(
-                photo,
-                new ScaleTransform(
-                    width / photo.Width * 96 / photo.DpiX,
-                    height / photo.Height * 96 / photo.DpiY,
-                    0, 0));
-            BitmapFrame thumbnail = BitmapFrame.Create(target);
-            BitmapFrame newphoto = Resize(thumbnail, width, height, BitmapScalingMode.HighQuality);
-
-
-            PngBitmapEncoder targetEncoder = new PngBitmapEncoder();
-            targetEncoder.Frames.Add(newphoto);
-            targetEncoder.Save(result);
-
-            return result;
+            return GetPngStream(newphoto);
         }
 
-
-        public static MemoryStream NearestNeighbor(MemoryStream original, int width, int height)
+        public static MemoryStream NearestNeighborPng(MemoryStream original, int width, int height)
         {
-            MemoryStream result = new MemoryStream();
+            BitmapFrame newphoto = GetBitmapFrame(original, width, height, BitmapScalingMode.NearestNeighbor);
 
-            BitmapDecoder photoDecoder = BitmapDecoder.Create(original, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
-            BitmapFrame photo = photoDecoder.Frames[0];
-
-            TransformedBitmap target = new TransformedBitmap(
-                photo,
-                new ScaleTransform(
-                    width / photo.Width * 96 / photo.DpiX,
-                    height / photo.Height * 96 / photo.DpiY,
-                    0, 0));
-            BitmapFrame thumbnail = BitmapFrame.Create(target);
-            BitmapFrame newphoto = Resize(thumbnail, width, height, BitmapScalingMode.NearestNeighbor);
-
-
-            PngBitmapEncoder targetEncoder = new PngBitmapEncoder();
-            targetEncoder.Frames.Add(newphoto);
-            targetEncoder.Save(result);
-
-            return result;
+            return GetPngStream(newphoto);
         }
 
-        private static BitmapFrame Resize(BitmapFrame photo, int width, int height, BitmapScalingMode scalingMode)
+        public static MemoryStream ResizeJpeg(MemoryStream original, int width, int height)
         {
-            DrawingGroup group = new DrawingGroup();
-            RenderOptions.SetBitmapScalingMode(group, scalingMode);
-            group.Children.Add(new ImageDrawing(photo, new Rect(0, 0, width, height)));
-            DrawingVisual targetVisual = new DrawingVisual();
-            DrawingContext targetContext = targetVisual.RenderOpen();
-            targetContext.DrawDrawing(group);
-            RenderTargetBitmap target = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Default);
-            targetContext.Close();
-            target.Render(targetVisual);
-            BitmapFrame targetFrame = BitmapFrame.Create(target);
-            return targetFrame;
+            BitmapFrame newphoto = GetBitmapFrame(original, width, height, BitmapScalingMode.Unspecified);
+
+            return GetJpegStream(newphoto);
+        }
+
+        public static MemoryStream LowJpeg(MemoryStream original, int width, int height)
+        {
+            BitmapFrame newphoto = GetBitmapFrame(original, width, height, BitmapScalingMode.LowQuality);
+
+            return GetJpegStream(newphoto);
+        }
+
+        public static MemoryStream HighJpeg(MemoryStream original, int width, int height)
+        {
+            BitmapFrame newphoto = GetBitmapFrame(original, width, height, BitmapScalingMode.HighQuality);
+
+            return GetJpegStream(newphoto);
+        }
+
+        public static MemoryStream NearestNeighborJpeg(MemoryStream original, int width, int height)
+        {
+            BitmapFrame newphoto = GetBitmapFrame(original, width, height, BitmapScalingMode.NearestNeighbor);
+
+            return GetJpegStream(newphoto);
+        }
+
+        public static MemoryStream ResizeBmp(MemoryStream original, int width, int height)
+        {
+            BitmapFrame newphoto = GetBitmapFrame(original, width, height, BitmapScalingMode.Unspecified);
+
+            return GetBmpStream(newphoto);
+        }
+
+        public static MemoryStream LowBmp(MemoryStream original, int width, int height)
+        {
+            BitmapFrame newphoto = GetBitmapFrame(original, width, height, BitmapScalingMode.LowQuality);
+
+            return GetBmpStream(newphoto);
+        }
+
+        public static MemoryStream HighBmp(MemoryStream original, int width, int height)
+        {
+            BitmapFrame newphoto = GetBitmapFrame(original, width, height, BitmapScalingMode.HighQuality);
+
+            return GetBmpStream(newphoto);
+        }
+
+        public static MemoryStream NearestNeighborBmp(MemoryStream original, int width, int height)
+        {
+            BitmapFrame newphoto = GetBitmapFrame(original, width, height, BitmapScalingMode.NearestNeighbor);
+
+            return GetBmpStream(newphoto);
         }
     }
 }
